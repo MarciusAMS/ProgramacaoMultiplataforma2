@@ -1,8 +1,53 @@
 const Cliente = require('../Model/clientesModel.js');
 const jwt = require('jsonwebtoken');
 const { JWT_KEY } = require('../utils/utils');
-const bcrypt = require('bcryptjs');
 
+
+// exports.cadastrarCliente = async (req, res) => {
+//     const { email } = req.body;
+
+//     if (!email || !senha) {
+//         return res.status(400).json({ mensagem: 'Email e senha são obrigatórios!' });
+//     }
+
+//     try {
+//         const clienteExistente = await Cliente.findOne({ where: { email } });
+
+//         if (clienteExistente) {
+//             return res.status(409).json({ mensagem: 'Usuário já existe!' });
+//         }
+
+//         const novoCliente = await Cliente.create({ email, senha });
+
+//         res.status(201).json({
+//             mensagem: 'Cliente criado com sucesso!',
+//             cliente: { id: novoCliente.id, email: novoCliente.email }
+//         });
+//     } catch (erro) {
+//         console.error(erro);
+//         res.status(500).json({ mensagem: 'Erro ao criar cliente.' });
+//     }
+// };
+
+// exports.getPerfil = async (req, res) => {
+//     const { email } = req.user;
+
+//     try {
+//         const cliente = await Cliente.findOne({ where: { email } });
+
+//         if (!cliente) {
+//             return res.status(404).json({ mensagem: 'Cliente não encontrado!' });
+//         }
+
+//         res.status(200).json({
+//             id: cliente.id,
+//             email: cliente.email
+//         });
+//     } catch (erro) {
+//         console.error(erro);
+//         res.status(500).json({ mensagem: 'Erro ao buscar perfil.' });
+//     }
+// };
 
 exports.listarClientes = async (req, res) => {
     Cliente.findAll({
@@ -27,180 +72,162 @@ exports.listarClientes = async (req, res) => {
     });
 };
 
-exports.getOne = (req, res, next) => {
-    const id = req.body.id;
-
-    if (id === undefined) {
-        res.status(400).json({
-            mensagem: 'Campos inválidos!'
-        });
-    } else {
-        Cliente.findByPk(id).then(clientes => {
-            res.status(200).json({
-                mensagem: 'Usuário encontrado:',
-                cliente: {
-                    id: clientes.id,
-                    email: clientes.email
-                }
-            });
-        }).catch(erro => {
-            console.log(erro);
-            res.status(500).json({
-                mensagem: 'Erro ao buscar cliente'
-            });
-        });
-    };
-}
 
 exports.adicionarCliente = async (req, res) => {
-    const email = req.body.email;
-    const senha = req.body.senha;
+    try {
+        const { email } = req.body;
 
-    if (email === undefined || senha === undefined) {
-        res.status(400).json({
-            mensagem: 'Campos Inválidos!'
-        });
-    } else {
-        Cliente.findOne({
-            where: {
-                email: email
-            }
-        }).then(clientes => {
-            if (clientes == undefined) {
-                const salt = bcrypt.genSaltSync();
-                const senhaCriptografada = bcrypt.hashSync(senha, salt);
+        console.log(req.body);  // ✅ Já vimos que tá chegando
 
-                Cliente.create({
-                    email: email,
-                    senha: senhaCriptografada
-                }).then(clienteCriado => {
-                    res.status(201).json({
-                        mensagem: 'Usuário criado com sucesso!',
-                        clientes: {
-                            id: clienteCriado.id,
-                            email: clienteCriado.email
-                        }
-                    });
-                });
-            } else {
-                res.status(409).json({
-                    mensagem: 'Usuário já existe!'
-                });
-            }
-        }).catch(erro => {
-            console.log(erro);
-            res.status(500).json({
-                mensagem: 'Erro ao criar cliente!'
+        if (!email) {
+            return res.status(400).json({
+                mensagem: 'Campo Inválido!'
             });
+        }
+
+        const clienteExistente = await Cliente.findOne({ where: { email } });
+
+        if (!clienteExistente) {
+            const clienteCriado = await Cliente.create({ email });
+
+            return res.status(201).json({
+                mensagem: 'Usuário criado com sucesso!',
+                cliente: {
+                    id: clienteCriado.id,
+                    email: clienteCriado.email
+                }
+            });
+        } else {
+            return res.status(409).json({
+                mensagem: 'Usuário já existe!'
+            });
+        }
+    } catch (erro) {
+        console.error(erro);
+        return res.status(500).json({
+            mensagem: 'Erro ao criar cliente!'
         });
-    };
+    }
 };
+
+
+
+exports.editarCliente = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const cliente = await Cliente.findByPk(id);
+
+        if (!cliente) {
+            return res.status(404).json({ mensagem: 'Cliente não encontrado' });
+        }
+
+        return res.status(200).json({ cliente });
+    } catch (erro) {
+        console.log(erro);
+        return res.status(500).json({ mensagem: 'Erro ao buscar cliente' });
+    }
+};
+
+
 
 
 exports.alterarCliente = async (req, res) => {
-    const id = req.body.id;
-    const email = req.body.email;
-    const senha = req.body.senha;
+    const { id, email } = req.body;
 
-    if (id === undefined || email === undefined) {
-        res.status(400).json({
+    if (!id || !email) {
+        return res.status(400).json({
             mensagem: 'Campos Inválidos'
         });
-    } else {
-        const salt = bcrypt.genSaltSync();
-        const senhaCriptografada = bcrypt.hashSync(senha, salt);
+    }
 
-        Cliente.update({
-            email: email,
-            senha: senhaCriptografada
+    try {
+        const cliente = await Cliente.findByPk(id);
+        if (!cliente) {
+            return res.status(404).json({ mensagem: 'Cliente não encontrado' });
+        }
+
+        await Cliente.update({
+            email,
         }, {
-            where: {
-                id: id
-            }
-        }).then(() => {
-            res.status(200).json({
-                mensagem: 'Usuário atualizado com sucesso!'
-            });
-        }).catch(erro => {
-            console.log(erro);
-        })
+            where: { id }
+        });
+
+        return res.status(200).json({
+            mensagem: 'Usuário atualizado com sucesso!'
+        });
+    } catch (erro) {
+        console.log(erro);
+        return res.status(500).json({
+            mensagem: 'Erro ao atualizar cliente!'
+        });
     }
 };
 
-exports.excluirCliente = async (req, res) => {
-    const id = req.body.id;
 
-    if(id === undefined) {
-        res.status(400).json({
+exports.excluirCliente = async (req, res) => {
+    const { id } = req.body;
+
+    if (!id) {
+        return res.status(400).json({
             mensagem: 'Campos Inválidos!'
         });
     }
 
-    Cliente.destroy({
-        where: {
-            id: id
+    try {
+        const deletado = await Cliente.destroy({ where: { id } });
+
+        if (deletado) {
+            return res.status(200).json({
+                mensagem: 'Usuário deletado com sucesso!'
+            });
+        } else {
+            return res.status(404).json({
+                mensagem: 'Usuário não encontrado!'
+            });
         }
-    }).then(() => {
-        res.status(400).json({
-            mensagem: 'Usuário deletado com sucesso!'
-        });
-    }).catch(erro => {
+    } catch (erro) {
         console.log(erro);
-        res.status(500).json({
+        return res.status(500).json({
             mensagem: 'Erro ao deletar usuário'
         });
-    });
+    }
 };
+
 
 exports.login = (req, res, next) => {
     const email = req.body.email;
-    const senha = req.body.senha;
 
-    let erro = false;
-    let clienteEncontrado = false;
-
-    if (email === undefined || senha === undefined) {
-        res.status(400).json({
-            mensagem: 'Campos Inválidos'
+    if (!email) {
+        return res.status(400).json({
+            mensagem: 'Campo Inválido'
         });
-    } else {
-        Cliente.findOne({
-            where: {
-                email: email
-            }
-        }).then(cliente => {
+    }
+
+    Cliente.findOne({ where: { email: email } })
+        .then(cliente => {
             if (!cliente) {
-                erro = true;
-                res.status(401).json({
+                return res.status(401).json({
                     mensagem: 'Falha na Autenticação!'
                 });
-            } else {
-                clienteEncontrado = cliente;
-                return bcrypt.compare(senha, cliente.senha);
             }
-        }).then(resultado => {
-            if (!erro) {
-                if (!resultado) {
-                    return res.status(401).json({
-                        mensagem: 'Falha na Autenticação! 2'
-                    });
-                }
-                const token = jwt.sign({
-                    email: clienteEncontrado.email
-                }, JWT_KEY, {
-                    expiresIn: '1h'
-                });
-                res.status(200).json({
-                    mensagem: 'Autenticado com Sucesso!',
-                    token: token,
-                    expiresIn: 3600
-                })
-            }
-        }).catch(erro => {
+
+            const token = jwt.sign({
+                email: cliente.email
+            }, JWT_KEY, {
+                expiresIn: '1h'
+            });
+
+            return res.status(200).json({
+                mensagem: 'Autenticado com Sucesso!',
+                token: token,
+                expiresIn: 3600
+            });
+        })
+        .catch(erro => {
             console.log(erro);
             res.status(500).json({
                 mensagem: 'Erro ao fazer login'
             });
         });
-    }
 };
