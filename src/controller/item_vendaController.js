@@ -1,13 +1,13 @@
-const Item_Venda = require('../Model/item_vendaModel');
-const Vendas = require('../Model/vendasModel');
-const Livros = require('../Model/livrosModel');
+const ItemVenda = require('../Model/item_vendaModel');
+const Venda = require('../Model/vendasModel');
+const Livro = require('../Model/livrosModel');
 
-exports.listarItemVenda = async (req, res) => {
+exports.listarItensVenda = async (req, res) => {
     try {
-        const itens = await Item_Venda.findAll();
+        const itens = await ItemVenda.findAll();
         res.status(200).json(itens);
     } catch (erro) {
-        console.error('Erro ao listar itens:', erro);
+        console.error('Erro ao listar itens da venda:', erro);
         res.status(500).json({ erro: 'Erro ao listar itens da venda.' });
     }
 };
@@ -17,37 +17,38 @@ exports.adicionarItemVenda = async (req, res) => {
 
     try {
         if (!venda_id || !livro_id) {
-            return res.status(400).json({ erro: 'venda_id e livro_id são obrigatórios' });
+            return res.status(400).json({ erro: 'Campos venda_id e livro_id são obrigatórios.' });
         }
 
-        const vendaExiste = await Vendas.findByPk(venda_id);
-        if (!vendaExiste) {
+        const venda = await Venda.findByPk(venda_id);
+        if (!venda) {
             return res.status(404).json({ erro: `Venda com ID ${venda_id} não encontrada.` });
         }
 
-        const livroExiste = await Livros.findByPk(livro_id);
-        if (!livroExiste) {
+        const livro = await Livro.findByPk(livro_id);
+        if (!livro) {
             return res.status(404).json({ erro: `Livro com ID ${livro_id} não encontrado.` });
         }
 
-        const novoItem = await Item_Venda.create({ venda_id, livro_id, quantidade, preco_unitario });
+        const novoItem = await ItemVenda.create({ venda_id, livro_id, quantidade, preco_unitario });
 
         res.status(201).json(novoItem);
     } catch (erro) {
         console.error('Erro ao adicionar item da venda:', erro);
-        res.status(500).json({ erro: 'Erro interno ao adicionar item da venda.' });
+        res.status(500).json({ erro: 'Erro ao adicionar item da venda.' });
     }
 };
 
-exports.editarItemVenda = async (req, res) => {
+exports.buscarItemVenda = async (req, res) => {
     const { id } = req.params;
+
     try {
-        const item = await Item_Venda.findByPk(id);
+        const item = await ItemVenda.findByPk(id);
         if (!item) return res.status(404).json({ erro: 'Item da venda não encontrado.' });
 
         res.status(200).json(item);
     } catch (erro) {
-        console.error('Erro ao buscar item:', erro);
+        console.error('Erro ao buscar item da venda:', erro);
         res.status(500).json({ erro: 'Erro ao buscar item da venda.' });
     }
 };
@@ -57,7 +58,7 @@ exports.alterarItemVenda = async (req, res) => {
     const { venda_id, livro_id, quantidade, preco_unitario } = req.body;
 
     try {
-        const atualizado = await Item_Venda.update(
+        const atualizado = await ItemVenda.update(
             { venda_id, livro_id, quantidade, preco_unitario },
             { where: { id } }
         );
@@ -66,7 +67,7 @@ exports.alterarItemVenda = async (req, res) => {
 
         res.status(200).json({ mensagem: 'Item da venda atualizado com sucesso.' });
     } catch (erro) {
-        console.error('Erro ao alterar item:', erro);
+        console.error('Erro ao alterar item da venda:', erro);
         res.status(500).json({ erro: 'Erro ao alterar item da venda.' });
     }
 };
@@ -75,13 +76,13 @@ exports.excluirItemVenda = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const excluido = await Item_Venda.destroy({ where: { id } });
+        const excluido = await ItemVenda.destroy({ where: { id } });
 
         if (!excluido) return res.status(404).json({ erro: 'Item da venda não encontrado.' });
 
         res.status(200).json({ mensagem: 'Item da venda excluído com sucesso.' });
     } catch (erro) {
-        console.error('Erro ao excluir item:', erro);
+        console.error('Erro ao excluir item da venda:', erro);
         res.status(500).json({ erro: 'Erro ao excluir item da venda.' });
     }
 };

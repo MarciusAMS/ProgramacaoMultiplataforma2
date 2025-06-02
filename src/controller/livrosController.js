@@ -1,7 +1,14 @@
 const Livros = require('../Model/livrosModel');
 const ItemVenda = require('../Model/item_vendaModel');
 
+
 exports.listarLivros = async (req, res) => {
+    const { email } = req.user;
+
+    if (!email) {
+        return res.status(400).json({ mensagem: 'Token inválido ou ausente!' });
+    }
+
     try {
         const livros = await Livros.findAll();
         res.status(200).json(livros);
@@ -11,19 +18,37 @@ exports.listarLivros = async (req, res) => {
     }
 };
 
+
 exports.adicionarLivro = async (req, res) => {
+    const { email } = req.user;
+
+    if (!email) {
+        return res.status(400).json({ mensagem: 'Token inválido ou ausente!' });
+    }
+
     const { titulo, autor, editora, ano_publicacao, isbn, preco, quantidade_estoque } = req.body;
 
     try {
         const livro = await Livros.create({ titulo, autor, editora, ano_publicacao, isbn, preco, quantidade_estoque });
-        res.status(201).json(livro);
+
+        res.status(201).json({
+            mensagem: 'Livro adicionado com sucesso!',
+            livro
+        });
     } catch (erro) {
         console.error('Erro ao adicionar livro:', erro);
         res.status(500).json({ erro: 'Erro ao adicionar livro.' });
     }
 };
 
+
 exports.editarLivro = async (req, res) => {
+    const { email } = req.user;
+
+    if (!email) {
+        return res.status(400).json({ mensagem: 'Token inválido ou ausente!' });
+    }
+
     const { id } = req.params;
 
     try {
@@ -37,7 +62,14 @@ exports.editarLivro = async (req, res) => {
     }
 };
 
+
 exports.alterarLivro = async (req, res) => {
+    const { email } = req.user;
+
+    if (!email) {
+        return res.status(400).json({ mensagem: 'Token inválido ou ausente!' });
+    }
+
     const { id } = req.params;
     const { titulo, autor, editora, ano_publicacao, isbn, preco, quantidade_estoque } = req.body;
 
@@ -56,7 +88,14 @@ exports.alterarLivro = async (req, res) => {
     }
 };
 
+
 exports.excluirLivro = async (req, res) => {
+    const { email } = req.user;
+
+    if (!email) {
+        return res.status(400).json({ mensagem: 'Token inválido ou ausente!' });
+    }
+
     const { id } = req.params;
 
     try {
@@ -72,7 +111,3 @@ exports.excluirLivro = async (req, res) => {
         res.status(500).json({ erro: 'Erro ao excluir livro.' });
     }
 };
-
-
-
-
