@@ -31,7 +31,7 @@ exports.adicionarCliente = async (req, res) => {
     try {
         const { nome, endereco, telefone, email } = req.body;
 
-        console.log(req.body);  // ✅ Já vimos que tá chegando
+        console.log(req.body); 
 
         if (!email) {
             return res.status(400).json({
