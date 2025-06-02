@@ -3,52 +3,6 @@ const jwt = require('jsonwebtoken');
 const { JWT_KEY } = require('../utils/utils');
 
 
-// exports.cadastrarCliente = async (req, res) => {
-//     const { email } = req.body;
-
-//     if (!email || !senha) {
-//         return res.status(400).json({ mensagem: 'Email e senha são obrigatórios!' });
-//     }
-
-//     try {
-//         const clienteExistente = await Cliente.findOne({ where: { email } });
-
-//         if (clienteExistente) {
-//             return res.status(409).json({ mensagem: 'Usuário já existe!' });
-//         }
-
-//         const novoCliente = await Cliente.create({ email, senha });
-
-//         res.status(201).json({
-//             mensagem: 'Cliente criado com sucesso!',
-//             cliente: { id: novoCliente.id, email: novoCliente.email }
-//         });
-//     } catch (erro) {
-//         console.error(erro);
-//         res.status(500).json({ mensagem: 'Erro ao criar cliente.' });
-//     }
-// };
-
-// exports.getPerfil = async (req, res) => {
-//     const { email } = req.user;
-
-//     try {
-//         const cliente = await Cliente.findOne({ where: { email } });
-
-//         if (!cliente) {
-//             return res.status(404).json({ mensagem: 'Cliente não encontrado!' });
-//         }
-
-//         res.status(200).json({
-//             id: cliente.id,
-//             email: cliente.email
-//         });
-//     } catch (erro) {
-//         console.error(erro);
-//         res.status(500).json({ mensagem: 'Erro ao buscar perfil.' });
-//     }
-// };
-
 exports.listarClientes = async (req, res) => {
     Cliente.findAll({
         order: [
@@ -75,7 +29,7 @@ exports.listarClientes = async (req, res) => {
 
 exports.adicionarCliente = async (req, res) => {
     try {
-        const { email } = req.body;
+        const { nome, endereco, telefone, email } = req.body;
 
         console.log(req.body);  // ✅ Já vimos que tá chegando
 
@@ -88,12 +42,15 @@ exports.adicionarCliente = async (req, res) => {
         const clienteExistente = await Cliente.findOne({ where: { email } });
 
         if (!clienteExistente) {
-            const clienteCriado = await Cliente.create({ email });
+            const clienteCriado = await Cliente.create({nome, endereco, telefone, email });
 
             return res.status(201).json({
                 mensagem: 'Usuário criado com sucesso!',
                 cliente: {
                     id: clienteCriado.id,
+                    nome: clienteCriado.nome,
+                    endereco: clienteCriado.endereco,
+                    telefone: clienteCriado.telefone,
                     email: clienteCriado.email
                 }
             });
@@ -133,7 +90,8 @@ exports.editarCliente = async (req, res) => {
 
 
 exports.alterarCliente = async (req, res) => {
-    const { id, email } = req.body;
+    const id = req.params.id;
+    const { nome, endereco, telefone, email } = req.body;
 
     if (!id || !email) {
         return res.status(400).json({
@@ -148,6 +106,9 @@ exports.alterarCliente = async (req, res) => {
         }
 
         await Cliente.update({
+            nome,
+            endereco,
+            telefone,
             email,
         }, {
             where: { id }
@@ -166,7 +127,7 @@ exports.alterarCliente = async (req, res) => {
 
 
 exports.excluirCliente = async (req, res) => {
-    const { id } = req.body;
+      const id = req.params.id;
 
     if (!id) {
         return res.status(400).json({
