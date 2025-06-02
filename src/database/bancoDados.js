@@ -1,6 +1,6 @@
 const { Sequelize } = require('sequelize');
 
-const conexao = new Sequelize('Livraria', 'root', '', {
+const conexao = new Sequelize('Livraria2', 'root', '', {
   host: 'localhost',
   port: 3306,
   dialect: 'mysql'
