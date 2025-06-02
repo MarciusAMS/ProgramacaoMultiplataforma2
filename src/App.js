@@ -1,24 +1,22 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+//const bodyParser = require('body-parser');
 const clientesRoutes = require('./Routes/clientesRoutes');
-const vendasRoutes = require('./src/Routes/vendasRoutes');
-const livrosRoutes = require('./src/Routes/livrosRoutes');
-const itemVendaRoutes = require('./src/Routes/itemVendaRoutes');
-const menuRoutes = require('./src/Routes/menuRoutes');
-const { conexao } = require('./src/Model/indexModel');
+const vendasRoutes = require('./Routes/vendasRoutes');
+const livrosRoutes = require('./Routes/livrosRoutes');
+const itemVendaRoutes = require('./Routes/itemVendaRoutes');
+const menuRoutes = require('./Routes/menuRoutes');
+const { conexao } = require('./Model/indexModel');
 const path = require('path');
 const methodOverride = require('method-override');
+const cors = require('cors');
 
 const app = express();
 const port = 3000;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+app.use(express.json());
+app.use(cors());
 
 app.use('/api/clientes', clientesRoutes);
 app.use('/api/vendas', vendasRoutes);
